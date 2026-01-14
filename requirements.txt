@@ -1,5 +1,5 @@
-# Google Gemini AI
-google-generativeai>=0.3.0
+# OpenRouter API (Gemini 2.5 Pro)
+# Utilise l'API compatible OpenAI via requests
 
 # Framework API
 fastapi>=0.104.0

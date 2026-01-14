@@ -33,10 +33,12 @@ class SensorData(BaseModel):
     """
     Format des données des capteurs
     """
-    temperature: Optional[float] = None
-    humidity: Optional[float] = None
-    co2: Optional[float] = None
-    pm25: Optional[float] = None
+    temperature: Optional[float] = None  # Temp. en °C
+    humidity: Optional[float] = None  # Humidité en %
+    co2: Optional[float] = None  # CO2 en ppm
+    pm25: Optional[float] = None  # PM2.5 en µg/m³
+    no2: Optional[float] = None  # NO2 en µg/m³
+    pressure: Optional[float] = None  # Pression en hPa
     pollen: Optional[str] = None
     timestamp: Optional[str] = None
     location: Optional[str] = None
@@ -45,12 +47,14 @@ class SensorData(BaseModel):
     class Config:
         schema_extra = {
             "example": {
-                "temperature": 32.0,
-                "humidity": 35.0,
-                "co2": 1200.0,
-                "pm25": 45.0,
-                "pollen": "élevé",
-                "timestamp": "2025-10-21T14:30:00",
+                "temperature": 22.0,
+                "humidity": 65.0,
+                "co2": 420.0,
+                "pm25": 38.0,
+                "no2": 45.0,
+                "pressure": 1015.0,
+                "pollen": "modéré",
+                "timestamp": "2026-01-14T14:30:00",
                 "location": "Abidjan",
                 "user_id": "user123"
             }
@@ -61,9 +65,21 @@ class AnalysisResponse(BaseModel):
     Format de la réponse d'analyse
     """
     success: bool
+    # Données des capteurs
+    temperature: Optional[float] = None
+    humidity: Optional[float] = None
+    co2: Optional[float] = None
+    pm25: Optional[float] = None
+    no2: Optional[float] = None
+    pressure: Optional[float] = None
+    # Qualité de l'air
+    air_quality_score: Optional[int] = None  # Score 0-100
+    air_quality_level: Optional[str] = None  # "Bon", "Modéré", "Air mal sein", etc.
+    # Analyse des risques
     niveau_risque: str
     score_risque: Optional[int] = None
     maladies_concernees: Optional[List[str]] = []
+    risques_sante: Optional[List[dict]] = []  # Health risks with descriptions
     facteurs_risque: Optional[List[dict]] = []
     recommandations: Optional[List[str]] = []
     message_vocal: str

@@ -1,4 +1,4 @@
-import google.generativeai as genai
+import requests
 import pandas as pd
 import json
 from config import Config
@@ -8,14 +8,18 @@ import os
 class RespirIAModel:
     """
     Modèle IA pour la prédiction des risques respiratoires
-    Utilise Gemini pour l'analyse contextuelle et prédictive
+    Utilise Gemini 2.5 Pro via OpenRouter pour l'analyse contextuelle et prédictive
     """
     
     def __init__(self):
-        # Configuration de l'API Gemini
-        genai.configure(api_key=Config.GEMINI_API_KEY)
-        self.model = genai.GenerativeModel(Config.GEMINI_MODEL)
+        # Configuration d'OpenRouter
+        self.api_key = Config.OPENROUTER_API_KEY
+        self.base_url = Config.OPENROUTER_BASE_URL
+        self.model = Config.GEMINI_MODEL
         self.training_context = ""
+        
+        if not self.api_key:
+            raise ValueError("OPENROUTER_API_KEY non configurée dans .env")
         
     def load_training_data(self):
         """
@@ -103,11 +107,40 @@ Réponds UNIQUEMENT avec le JSON, sans texte supplémentaire.
 """
         
         try:
-            # Appel à l'API Gemini
-            response = self.model.generate_content(prompt)
+            # Appel à OpenRouter via l'API compatible OpenAI
+            headers = {
+                "Authorization": f"Bearer {self.api_key}",
+                "HTTP-Referer": "https://respiria.app",
+                "X-Title": "RespirIA"
+            }
+            
+            payload = {
+                "model": self.model,
+                "messages": [
+                    {"role": "system", "content": "Tu es RespirIA, un assistant médical spécialisé dans la prédiction des risques respiratoires."},
+                    {"role": "user", "content": prompt}
+                ],
+                "temperature": Config.TEMPERATURE,
+                "max_tokens": Config.MAX_OUTPUT_TOKENS
+            }
+            
+            response = requests.post(
+                f"{self.base_url}/chat/completions",
+                headers=headers,
+                json=payload,
+                timeout=30
+            )
+            
+            if response.status_code != 200:
+                print(f"✗ Erreur OpenRouter : {response.status_code} - {response.text}")
+                return self._get_fallback_response()
+            
+            # Parser la réponse JSON de OpenRouter
+            response_data = response.json()
+            result_text = response_data['choices'][0]['message']['content']
             
             # Parser la réponse JSON
-            result = self._parse_gemini_response(response.text)
+            result = self._parse_gemini_response(result_text)
             
             return result
             
