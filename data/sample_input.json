@@ -1,0 +1,8 @@
+{
+  "temperature": 31,
+  "humidity": 38,
+  "CO2": 950,
+  "pollen": "élevé",
+  "tabagisme": "oui",
+  "maladie_chronique": "oui"
+}
